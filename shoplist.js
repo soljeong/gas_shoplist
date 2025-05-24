@@ -1,5 +1,8 @@
 function exportSheetToJS() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("EZ대리점( 작업자 : 정태민 외 작업금지 )"); // 시트 이름 맞춰주세요
+  // 스프레드시트 ID를 직접 넣어 주세요
+  const ss = SpreadsheetApp.openById("1_Kf5Zi1E26lNIFQATJOeyVNt-NFgZRTWrfvehQLjYlU");
+  const sheet = ss.getSheetByName("EZ대리점");
+  if (!sheet) throw new Error('시트 "EZ대리점"을 찾을 수 없습니다.');
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const rows = data.slice(1);
