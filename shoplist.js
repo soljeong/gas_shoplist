@@ -9,6 +9,7 @@ function exportSheetToJS() {
   // 필요한 열 인덱스 정의
   const indices = {
     name: headers.indexOf("온라인매장명"),
+    statusIdx: headers.indexOf("구분"),
     address: headers.indexOf("주소"),
     tel: headers.indexOf("매장번호"),
     ez: headers.indexOf("ez"),
@@ -25,6 +26,7 @@ function exportSheetToJS() {
   // 객체 배열 구성
   const storeObjects = rows
     .filter(row => row[indices.name]) // 빈 행 제외
+    .filter(row => row[indices.statusIdx] === '대리점회원')   // '대리점회원'만 필터링
     .map(row => {
       return {
         name: row[indices.name],
@@ -43,8 +45,6 @@ function exportSheetToJS() {
     });
 
   const jsCode = `const STORES = ${JSON.stringify(storeObjects, null, 2)};`;
-
-
   return jsCode;
 }
 
