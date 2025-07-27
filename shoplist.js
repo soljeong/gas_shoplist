@@ -1,6 +1,5 @@
 function exportSheetToJS() {
-  // 스프레드시트 ID를 직접 넣어 주세요
-  const ss = SpreadsheetApp.openById("1_Kf5Zi1E26lNIFQATJOeyVNt-NFgZRTWrfvehQLjYlU");
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName("EZ대리점");
   if (!sheet) throw new Error('시트 "EZ대리점"을 찾을 수 없습니다.');
   const data = sheet.getDataRange().getValues();
@@ -9,7 +8,7 @@ function exportSheetToJS() {
 
   // 필요한 열 인덱스 정의
   const indices = {
-    name: headers.indexOf("매장이름"),
+    name: headers.indexOf("온라인매장명"),
     address: headers.indexOf("주소"),
     tel: headers.indexOf("매장번호"),
     ez: headers.indexOf("ez"),
@@ -49,38 +48,19 @@ function exportSheetToJS() {
   return jsCode;
 }
 
-function doGet() {
-  const storesData = exportSheetToJS(); // 아래 함수 참조
-  Logger.log(storesData);
-
-  const html = `
-    <html>
-      <body>
-        <a id="download" href="data:text/javascript;charset=utf-8,${encodeURIComponent(storesData)}" download="stores.js">Download stores.js</a>
-        <script>document.getElementById("download").click();</script>
-      </body>
-    </html>
-  `;
-  return HtmlService.createHtmlOutput(html).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-}
-
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("📦 유틸리티")
-    .addItem("📝 JS 파일 다운로드", "openWebApp")
+    .addItem('📝 JS 코드 보기', 'showCodeDialog')
     .addToUi();
 }
 
-function openWebApp() {
-  const url = "https://script.google.com/macros/s/AKfycbz5HvepLWwS0way5HgUtvrJq9EG3mVj-QJeHZz_GQ1k7ODh-TZlV_6nJCrfzv2ZEn4Bjg/exec"; // 웹앱 URL 넣기
-  const html = `
-    <script>
-      window.open("${url}", "_blank");
-      google.script.host.close();
-    </script>
-  `;
-  SpreadsheetApp.getUi().showModalDialog(
-    HtmlService.createHtmlOutput(html).setWidth(10).setHeight(10),
-    "JS 다운로드"
-  );
+function showCodeDialog() {
+  const code = exportSheetToJS();
+  const template = HtmlService.createTemplateFromFile('codeDialog');
+  template.CODE = code;
+  const html = template.evaluate()
+    .setWidth(600)
+    .setHeight(500);
+  SpreadsheetApp.getUi().showModalDialog(html, 'stores.js 코드 복사');
 }
