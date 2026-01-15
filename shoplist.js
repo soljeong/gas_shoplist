@@ -1,7 +1,7 @@
 function exportSheetToJS() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("대리점");  // 시트 이름
-  if (!sheet) throw new Error('시트 "대리점"을 찾을 수 없습니다.');
+  const sheet = ss.getSheetByName("EZ대리점");  // 시트 이름
+  if (!sheet) throw new Error('시트 "EZ대리점"을 찾을 수 없습니다.');
 
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -11,38 +11,43 @@ function exportSheetToJS() {
   const idx = (name) => headers.indexOf(name);
 
   const indices = {
-    name: idx("온라인매장명"),
+    name: idx("매장명\n(간판상 이름)"),
     status: idx("구분"),
-    address: idx("주소"),
-    tel: idx("매장번호"),
+    red: idx("레드존"), 
+    show: idx("지도에표시"),
 
-    red: idx("red"),               
-    bicycle: idx("bicycle"),
-    scooter: idx("scooter"),
-    kick: idx("kick"),
+    address1: idx("도로명주소지만"),
+    address2: idx("층,호수,상호명"),
+    address: -1,  // 아래에서 계산
+    tel: idx("전화번호(매장)"),
 
-    city: idx("city"),
-    county: idx("county"),
-    lat: idx("lat"),
-    lng: idx("lng"),
+    bicycle: idx("자전거"),
+    scooter: idx("스쿠터"),
+    kick: idx("킥보드"),
 
-    hours: idx("영업시간"),
-    map: idx("지도링크"),
-    models: idx("취급모델"),          // 쉼표 구분 문자열
-    youtube: idx("youtube"),
-    insta: idx("insta"),
-    blog: idx("blog"),
-    comment: idx("comment")
+    city: idx("시/군"),
+    county: idx("행정구역"),
+    lat: idx("위도"),
+    lng: idx("경도"),
+
+    hours: idx("운영시간"),
+    map: idx("네이버지도"),
+    models: idx("시승제품"),          // 쉼표 구분 문자열
+    youtube: idx("유튜브"),
+    insta: idx("인스타"),
+    blog: idx("블로그"),
+    comment: idx("사장님코멘트")
   };
 
   const stores = rows
     .filter(r => r[indices.name])                 // 매장명 없는 행 제외
-    .filter(r => r[indices.status] !== "일반")  // 구분에 일반 매장 제외
+    .filter(r => r[indices.show])                   // show가 true인 행만 필터
     .map(r => ({
       name: r[indices.name],
-      address: r[indices.address],
+      address: [r[indices.address1], r[indices.address2]]
+        .filter(Boolean)
+        .join(" "),
       tel: r[indices.tel],
-
       red: !!r[indices.red],
       bicycle: !!r[indices.bicycle],
       scooter: !!r[indices.scooter],
